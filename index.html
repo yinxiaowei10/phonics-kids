@@ -401,6 +401,54 @@
             text-align: right;
         }
 
+        .completion-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(126, 87, 194, 0.92);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            animation: fadeIn 0.4s ease;
+        }
+        .completion-screen.active { display: flex; }
+        .completion-card {
+            background: #fff;
+            border-radius: 32px;
+            padding: 48px;
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .completion-card .icon {
+            font-size: 80px;
+            margin-bottom: 16px;
+        }
+        .completion-card h2 {
+            color: var(--primary);
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        .completion-card p {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 28px;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.6); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .keyboard-hint {
+            font-size: 14px;
+            color: #90a4ae;
+            text-align: center;
+            margin-top: 12px;
+        }
+
         @media (max-width: 600px) {
             .container { padding: 24px; }
             h1 { font-size: 32px; }
@@ -524,6 +572,17 @@
                 <button class="btn btn-secondary" onclick="goToMode()">⬅️ 返回</button>
                 <button class="btn btn-primary" id="writeNext" disabled>下一步 ➡️</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 完成庆祝层 -->
+    <div class="completion-screen" id="completionScreen">
+        <div class="completion-card">
+            <div class="icon" id="completionIcon">🎉</div>
+            <h2 id="completionTitle">练习完成！</h2>
+            <p>太棒了，继续加油！</p>
+            <button class="btn btn-primary" onclick="restartCurrentMode()">再来一次 🔄</button>
+            <button class="btn btn-secondary" onclick="hideCompletion(); goToMode();" style="margin-top: 12px;">返回模式选择 ⬅️</button>
         </div>
     </div>
 
@@ -868,6 +927,35 @@
             if (appState.settings.soundEnabled) correctSound();
         }
 
+        // ===================== 通用工具函数 =====================
+        function switchScreen(name) {
+            Object.values(screens).forEach(s => s.classList.remove("active"));
+            screens[name].classList.add("active");
+        }
+
+        function showCompletion(title, icon = "🎉") {
+            const screen = document.getElementById("completionScreen");
+            document.getElementById("completionTitle").textContent = title;
+            document.getElementById("completionIcon").textContent = icon;
+            screen.classList.add("active");
+            if (appState.settings.soundEnabled) correctSound();
+        }
+
+        function hideCompletion() {
+            document.getElementById("completionScreen").classList.remove("active");
+        }
+
+        function restartCurrentMode() {
+            hideCompletion();
+            appState.currentIndex = 0;
+            switch (appState.currentMode) {
+                case "learn": initLearn(); break;
+                case "listen": initListen(); break;
+                case "blend": initBlend(); break;
+                case "write": initWrite(); break;
+            }
+        }
+
         // ===================== 首页：渲染级别 =====================
         function renderLevels() {
             const grid = document.getElementById("levelGrid");
@@ -978,12 +1066,15 @@
                 if (appState.currentIndex < appState.currentItems.length) {
                     initLearn();
                 } else {
-                    alert("本单元学习完成！🎉");
-                    goToMode();
+                    showCompletion("本单元学习完成！", "📖");
                 }
             };
 
             switchScreen("learn");
+            setTimeout(() => {
+                speak(`${item.symbol} says ${item.sound}. ${item.keyword}.`);
+                item.words.forEach((w, i) => setTimeout(() => speak(w), (i + 2) * 1200));
+            }, 500);
         }
 
         // ===================== 听音辨音 =====================
@@ -1008,32 +1099,51 @@
 
             const grid = document.getElementById("listenOptions");
             grid.innerHTML = "";
-            options.forEach(opt => {
+            let answered = false;
+
+            function handleAnswer(index) {
+                if (answered) return;
+                answered = true;
+                const opt = options[index];
+                const isCorrect = opt.symbol === item.symbol;
+                feedback.textContent = isCorrect ? "✅ 回答正确！" : `❌ 正确答案是 ${item.symbol}`;
+                feedback.className = `feedback ${isCorrect ? "correct" : "wrong"}`;
+                feedback.style.display = "block";
+                nextBtn.disabled = false;
+                Array.from(grid.children).forEach(c => c.style.pointerEvents = "none");
+                isCorrect ? correctSound() : wrongSound();
+            }
+
+            options.forEach((opt, idx) => {
                 const card = document.createElement("div");
                 card.className = "word-card";
                 card.innerHTML = `
+                    <div style="font-size:12px;color:#90a4ae;margin-bottom:4px;">${idx + 1}</div>
                     <div class="word-en">${opt.symbol}</div>
                     <div style="font-size:14px; color:#666;">${opt.sound}</div>
                 `;
-                card.addEventListener("click", () => {
-                    const isCorrect = opt.symbol === item.symbol;
-                    feedback.textContent = isCorrect ? "✅ 回答正确！" : `❌ 正确答案是 ${item.symbol}`;
-                    feedback.className = `feedback ${isCorrect ? "correct" : "wrong"}`;
-                    feedback.style.display = "block";
-                    nextBtn.disabled = false;
-                    Array.from(grid.children).forEach(c => c.style.pointerEvents = "none");
-                    isCorrect ? correctSound() : wrongSound();
-                });
+                card.addEventListener("click", () => handleAnswer(idx));
                 grid.appendChild(card);
             });
 
+            // 键盘支持 1-4
+            const keyHandler = (e) => {
+                if (document.getElementById("listenScreen").classList.contains("active")) {
+                    if (e.key >= "1" && e.key <= "4") {
+                        const idx = parseInt(e.key) - 1;
+                        if (idx < options.length) handleAnswer(idx);
+                    }
+                }
+            };
+            document.addEventListener("keydown", keyHandler);
+
             nextBtn.onclick = () => {
+                document.removeEventListener("keydown", keyHandler);
                 appState.currentIndex++;
                 if (appState.currentIndex < appState.currentItems.length) {
                     initListen();
                 } else {
-                    alert("听音辨音完成！🎉");
-                    goToMode();
+                    showCompletion("听音辨音完成！", "👂");
                 }
             };
 
@@ -1042,12 +1152,23 @@
         }
 
         // ===================== 拼读练习 =====================
+        function getBlendBreakdown(item, word) {
+            const symbol = item.symbol.toLowerCase();
+            const lowerWord = word.toLowerCase();
+            if (lowerWord.startsWith(symbol)) {
+                const rest = word.slice(symbol.length);
+                return `${item.sound}  +  ${rest}`;
+            }
+            // 兜底：按音节近似拆分
+            return `${item.sound}  +  ${word}`;
+        }
+
         function initBlend() {
             updateProgress("blendProgress");
             const item = appState.currentItems[appState.currentIndex];
             const word = item.words[Math.floor(Math.random() * item.words.length)];
             document.getElementById("blendWord").textContent = word;
-            document.getElementById("blendBreak").textContent = word.split("").join("-");
+            document.getElementById("blendBreak").textContent = getBlendBreakdown(item, word);
             document.getElementById("blendSpeak").onclick = () => speak(word);
 
             document.getElementById("blendNext").onclick = () => {
@@ -1055,12 +1176,12 @@
                 if (appState.currentIndex < appState.currentItems.length) {
                     initBlend();
                 } else {
-                    alert("拼读练习完成！🎉");
-                    goToMode();
+                    showCompletion("拼读练习完成！", "🧩");
                 }
             };
 
             switchScreen("blend");
+            setTimeout(() => speak(word), 600);
         }
 
         // ===================== 听音写词 =====================
@@ -1072,6 +1193,8 @@
             const feedback = document.getElementById("writeFeedback");
             const nextBtn = document.getElementById("writeNext");
             input.value = "";
+            input.disabled = false;
+            input.focus();
             feedback.style.display = "none";
             nextBtn.disabled = true;
 
@@ -1083,11 +1206,12 @@
                 feedback.className = `feedback ${isCorrect ? "correct" : "wrong"}`;
                 feedback.style.display = "block";
                 nextBtn.disabled = false;
+                input.disabled = true;
                 isCorrect ? correctSound() : wrongSound();
             };
 
             input.onkeydown = (e) => {
-                if (e.key === "Enter") document.getElementById("writeSubmit").click();
+                if (e.key === "Enter" && !input.disabled) document.getElementById("writeSubmit").click();
             };
 
             nextBtn.onclick = () => {
@@ -1095,14 +1219,54 @@
                 if (appState.currentIndex < appState.currentItems.length) {
                     initWrite();
                 } else {
-                    alert("听音写词完成！🎉");
-                    goToMode();
+                    showCompletion("听音写词完成！", "✍️");
                 }
             };
 
             switchScreen("write");
             setTimeout(() => speak(word), 500);
         }
+
+        // ===================== 全局键盘支持 =====================
+        document.addEventListener("keydown", (e) => {
+            if (document.getElementById("settingsModal").classList.contains("active")) return;
+            if (document.getElementById("completionScreen").classList.contains("active")) {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    hideCompletion();
+                }
+                return;
+            }
+
+            if (e.key === "Escape") {
+                if (screens.learn.classList.contains("active") || screens.listen.classList.contains("active") ||
+                    screens.blend.classList.contains("active") || screens.write.classList.contains("active") ||
+                    screens.mode.classList.contains("active") || screens.unit.classList.contains("active")) {
+                    goToMode();
+                }
+                return;
+            }
+
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                if (screens.learn.classList.contains("active")) {
+                    document.getElementById("learnNext").click();
+                } else if (screens.blend.classList.contains("active")) {
+                    document.getElementById("blendNext").click();
+                } else if (screens.listen.classList.contains("active")) {
+                    const nextBtn = document.getElementById("listenNext");
+                    if (!nextBtn.disabled) nextBtn.click();
+                } else if (screens.write.classList.contains("active")) {
+                    const input = document.getElementById("writeInput");
+                    const nextBtn = document.getElementById("writeNext");
+                    if (!input.disabled && document.activeElement !== input) {
+                        document.getElementById("writeSubmit").click();
+                    } else if (!nextBtn.disabled) {
+                        nextBtn.click();
+                    }
+                }
+            }
+        });
 
         // ===================== 进度条 =====================
         function updateProgress(id) {
