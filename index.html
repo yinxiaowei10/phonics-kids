@@ -426,12 +426,29 @@
             color: var(--primary);
         }
 
+        .word-card .word-img {
+            width: 72px;
+            height: 72px;
+            margin: 10px auto;
+            object-fit: contain;
+            transition: transform 0.3s;
+        }
+        .word-card:hover .word-img { transform: scale(1.15); }
+
         .word-card .word-icon {
             font-size: 40px;
             margin: 8px 0;
             transition: transform 0.3s;
         }
         .word-card:hover .word-icon { transform: scale(1.2); }
+
+        .keyword-img {
+            width: 120px;
+            height: 120px;
+            margin: 12px auto;
+            object-fit: contain;
+            animation: bounceIn 0.6s ease;
+        }
 
         .progress-bar {
             height: 20px;
@@ -594,6 +611,33 @@
             text-align: right;
         }
 
+        .checkin-box {
+            background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+            border: 3px solid #FFD93D;
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin: 0 auto 24px;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 4px 0 #F0C040;
+        }
+        .checkin-box .streak {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .checkin-box .checkin-btn {
+            margin-top: 12px;
+            width: auto;
+            padding: 12px 28px;
+            border-radius: 24px;
+            font-size: 18px;
+        }
+        .checkin-box .checked {
+            color: var(--success-dark);
+            font-weight: bold;
+        }
+
         .completion-screen {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -680,6 +724,13 @@
             <button class="settings-btn" onclick="openSettings()" title="设置">⚙️</button>
             <h1>🔤 自然拼读小课堂</h1>
             <p class="subtitle">像母语孩子一样学会拼读英语</p>
+
+            <div class="checkin-box" id="checkinBox">
+                <div>连续学习 <span class="streak" id="streakNum">0</span> 天 🔥</div>
+                <div id="checkinStatus" style="margin-top:4px;color:#8d6e63;">今天还没有打卡哦</div>
+                <button class="btn btn-success checkin-btn" id="checkinBtn" onclick="doCheckIn()">📍 今日打卡</button>
+            </div>
+
             <div class="section-title">选择级别</div>
             <div class="level-grid" id="levelGrid"></div>
         </div>
@@ -726,10 +777,17 @@
             <div class="phoneme-display">
                 <div id="learnPhoneme">Aa</div>
                 <div class="phoneme-big" id="learnBig">/a/</div>
-                <div class="phoneme-keyword" id="learnKeyword">apple 🍎</div>
-                <div class="speak-btn-wrap">
-                    <button class="speak-btn" id="learnSpeak">🔊</button>
+                <img class="keyword-img" id="learnKeywordImg" src="" alt="">
+                <div class="phoneme-keyword" id="learnKeyword">apple</div>
+                <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+                    <div class="speak-btn-wrap">
+                        <button class="speak-btn" id="learnSpeak" title="听发音">🔊</button>
+                    </div>
+                    <div class="speak-btn-wrap">
+                        <button class="speak-btn" id="learnRepeat" title="跟读" style="background:linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);box-shadow:0 8px 0 #2A9D8F,0 12px 24px rgba(78,205,196,0.3);">🎤</button>
+                    </div>
                 </div>
+                <div id="repeatFeedback" style="margin-top:12px;font-size:16px;color:#666;min-height:24px;"></div>
             </div>
             <div class="word-grid" id="learnWords"></div>
             <div class="btn-row">
@@ -803,6 +861,7 @@
             <div class="icon" id="completionIcon">🎉</div>
             <h2 id="completionTitle">练习完成！</h2>
             <p>太棒了，继续加油！</p>
+            <button class="btn btn-success" id="completionCheckinBtn" onclick="doCheckIn()" style="display:none;">📍 今日打卡</button>
             <button class="btn btn-primary" onclick="restartCurrentMode()">再来一次 🔄</button>
             <button class="btn btn-secondary" onclick="hideCompletion(); goToMode();" style="margin-top: 12px;">返回模式选择 ⬅️</button>
         </div>
@@ -814,11 +873,11 @@
             <h3>⚙️ 设置</h3>
             <div class="setting-row">
                 <label>自动朗读</label>
-                <div class="toggle-switch active" id="autoSpeakToggle" onclick="toggleAutoSpeak()"></div>
+                <div class="toggle-switch" id="autoSpeakToggle" onclick="toggleAutoSpeak()"></div>
             </div>
             <div class="setting-row">
                 <label>朗读语速</label>
-                <input type="range" id="rateSlider" min="0.4" max="1.2" step="0.1" value="0.7" oninput="updateRate(this.value)">
+                <input type="range" id="rateSlider" min="0.3" max="0.9" step="0.1" value="0.5" oninput="updateRate(this.value)">
             </div>
             <div class="setting-row">
                 <label>音效</label>
@@ -982,6 +1041,60 @@
             ]
         };
 
+        // ===================== 单词配图（Twemoji SVG）=====================
+        const wordImages = {
+            // Unit 1
+            "apple": "🍎", "ax": "🪓", "ant": "🐜", "alligator": "🐊",
+            "bear": "🐻", "bird": "🐦", "bed": "🛏", "banana": "🍌",
+            "cat": "🐱", "cup": "🥤", "car": "🚗", "computer": "💻",
+            // Unit 2
+            "dog": "🐶", "desk": "🪑", "doll": "🪆", "duck": "🦆",
+            "egg": "🥚", "elbow": "💪", "envelope": "✉", "elephant": "🐘",
+            "fish": "🐟", "fan": "🌀", "farm": "🚜", "fork": "🍴",
+            // Unit 3
+            "gorilla": "🦍", "goat": "🐐", "gift": "🎁", "girl": "👧",
+            "horse": "🐴", "hat": "🎩", "house": "🏠", "hot dog": "🌭",
+            "insect": "🐞", "ink": "✒", "igloo": "🧊", "iguana": "🦎",
+            // Unit 4
+            "jet": "✈", "jam": "🍯", "juice": "🧃", "jacket": "🧥",
+            "kangaroo": "🦘", "key": "🔑", "king": "👑", "kite": "🪁",
+            "lion": "🦁", "lamp": "💡", "leaf": "🍃", "lemon": "🍋",
+            // Unit 5
+            "monkey": "🐒", "milk": "🥛", "money": "💵", "mouse": "🐭",
+            "nut": "🥜", "net": "🕸", "nest": "🪺", "nose": "👃",
+            "octopus": "🐙", "ox": "🐂", "olive": "🫒", "ostrich": "🦃",
+            // Unit 6
+            "peach": "🍑", "pen": "🖊", "panda": "🐼", "pineapple": "🍍",
+            "queen": "👸", "quiz": "❓", "quilt": "🛏", "question": "❓",
+            "rabbit": "🐰", "rose": "🌹", "rice": "🍚", "robot": "🤖",
+            // Unit 7
+            "seal": "🦭", "sun": "☀", "soap": "🧼", "socks": "🧦",
+            "turtle": "🐢", "tent": "⛺", "tiger": "🐯", "teacher": "📚",
+            "umbrella": "☂", "up": "⬆", "uncle": "👨", "umpire": "⚾",
+            "van": "🚐", "vet": "💉", "vest": "🦺", "violin": "🎻",
+            // Unit 8
+            "wolf": "🐺", "web": "🕸", "water": "💧", "watch": "⌚",
+            "fox": "🦊", "box": "📦", "six": "🔢", "wax": "🕯",
+            "yo-yo": "🪀", "yak": "🦬", "yogurt": "🥣", "yacht": "⛵",
+            "zipper": "🤐", "zero": "0️⃣", "zoo": "🦁", "zebra": "🦓"
+        };
+
+        function getWordImage(word, fallbackIcon) {
+            return wordImages[word.toLowerCase()] || fallbackIcon || "🔤";
+        }
+
+        function emojiToTwemojiUrl(emoji) {
+            if (!emoji) return "";
+            const codepoints = [];
+            for (const char of emoji) {
+                const cp = char.codePointAt(0);
+                if (cp === 0xFE0F || cp === 0x200D) continue;
+                codepoints.push(cp.toString(16));
+            }
+            if (codepoints.length === 0) return "";
+            return `https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/${codepoints.join('-')}.svg`;
+        }
+
         // ===================== 应用状态 =====================
         const appState = {
             currentLevel: null,
@@ -990,8 +1103,8 @@
             currentItems: [],
             currentIndex: 0,
             settings: {
-                rate: 0.7,
-                autoSpeak: true,
+                rate: 0.5,
+                autoSpeak: false,
                 soundEnabled: true,
                 voiceName: "auto"
             }
@@ -1168,6 +1281,16 @@
             const screen = document.getElementById("completionScreen");
             document.getElementById("completionTitle").textContent = title;
             document.getElementById("completionIcon").textContent = icon;
+
+            const today = getTodayStr();
+            const data = getCheckinData();
+            const checkinBtn = document.getElementById("completionCheckinBtn");
+            if (!data.dates.includes(today)) {
+                checkinBtn.style.display = "inline-block";
+            } else {
+                checkinBtn.style.display = "none";
+            }
+
             screen.classList.add("active");
             if (appState.settings.soundEnabled) correctSound();
         }
@@ -1185,6 +1308,124 @@
                 case "blend": initBlend(); break;
                 case "write": initWrite(); break;
             }
+        }
+
+        // ===================== 跟读功能 =====================
+        function startRepeat(item) {
+            const feedback = document.getElementById("repeatFeedback");
+            if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+                feedback.textContent = "🎤 请你大声跟读：" + item.keyword;
+                speak(item.keyword);
+                setTimeout(() => {
+                    item.words.forEach((w, i) => setTimeout(() => speak(w), i * 1500));
+                }, 1200);
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = "en-US";
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            feedback.textContent = "🎤 请跟读 " + item.keyword + " ...";
+            speak(item.keyword);
+
+            recognition.onresult = (event) => {
+                const said = event.results[0][0].transcript.trim().toLowerCase();
+                const targetWords = [item.keyword, ...item.words].map(w => w.toLowerCase());
+                const matched = targetWords.some(w => said.includes(w));
+                if (matched) {
+                    feedback.textContent = "🌟 跟读很棒！";
+                    correctSound();
+                } else {
+                    feedback.textContent = "💪 再试一次，你说的是：" + said;
+                    wrongSound();
+                }
+            };
+
+            recognition.onerror = () => {
+                feedback.textContent = "🎤 没听清，请你再跟读一次";
+            };
+
+            recognition.onend = () => {
+                if (feedback.textContent.includes("...")) {
+                    feedback.textContent = "🎤 请再试一次";
+                }
+            };
+
+            setTimeout(() => recognition.start(), 1200);
+        }
+
+        // ===================== 打卡功能 =====================
+        const CHECKIN_KEY = "phonicsKids_checkin";
+
+        function getCheckinData() {
+            try {
+                return JSON.parse(localStorage.getItem(CHECKIN_KEY)) || { dates: [], streak: 0 };
+            } catch (e) {
+                return { dates: [], streak: 0 };
+            }
+        }
+
+        function saveCheckinData(data) {
+            localStorage.setItem(CHECKIN_KEY, JSON.stringify(data));
+        }
+
+        function getTodayStr() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        }
+
+        function isConsecutive(prev, curr) {
+            const p = new Date(prev + "T00:00:00");
+            const c = new Date(curr + "T00:00:00");
+            const diff = (c - p) / (1000 * 60 * 60 * 24);
+            return diff === 1;
+        }
+
+        function renderCheckin() {
+            const data = getCheckinData();
+            const today = getTodayStr();
+            const checkedToday = data.dates.includes(today);
+            document.getElementById("streakNum").textContent = data.streak || 0;
+            const status = document.getElementById("checkinStatus");
+            const btn = document.getElementById("checkinBtn");
+            if (checkedToday) {
+                status.textContent = "✅ 今天已打卡，继续保持！";
+                status.className = "checked";
+                btn.textContent = "已打卡 🔥";
+                btn.disabled = true;
+                btn.classList.remove("btn-success");
+                btn.classList.add("btn-secondary");
+            } else {
+                status.textContent = "今天还没有打卡哦";
+                status.className = "";
+                btn.textContent = "📍 今日打卡";
+                btn.disabled = false;
+                btn.classList.add("btn-success");
+                btn.classList.remove("btn-secondary");
+            }
+        }
+
+        function doCheckIn() {
+            const data = getCheckinData();
+            const today = getTodayStr();
+            if (data.dates.includes(today)) return;
+
+            const last = data.dates[data.dates.length - 1];
+            if (last && isConsecutive(last, today)) {
+                data.streak = (data.streak || 0) + 1;
+            } else {
+                data.streak = 1;
+            }
+            data.dates.push(today);
+            // 只保留最近 30 条记录
+            if (data.dates.length > 30) data.dates = data.dates.slice(-30);
+            saveCheckinData(data);
+            renderCheckin();
+            correctSound();
+            showCompletion("打卡成功！", "🔥");
         }
 
         // ===================== 首页：渲染级别 =====================
@@ -1272,21 +1513,31 @@
             const item = appState.currentItems[appState.currentIndex];
             document.getElementById("learnPhoneme").textContent = `${item.symbol} 发音 ${item.sound}`;
             document.getElementById("learnBig").textContent = item.sound;
-            document.getElementById("learnKeyword").textContent = `${item.keyword} ${item.icon || ""}`;
+            document.getElementById("learnKeyword").textContent = item.keyword;
+
+            const keywordImg = document.getElementById("learnKeywordImg");
+            keywordImg.src = emojiToTwemojiUrl(item.icon || getWordImage(item.keyword));
+            keywordImg.alt = item.keyword;
+
+            const repeatFeedback = document.getElementById("repeatFeedback");
+            repeatFeedback.textContent = "";
 
             document.getElementById("learnSpeak").onclick = () => {
                 speak(`${item.symbol} says ${item.sound}. ${item.keyword}.`);
                 item.words.forEach((w, i) => setTimeout(() => speak(w), (i + 2) * 1200));
             };
 
+            document.getElementById("learnRepeat").onclick = () => startRepeat(item);
+
             const wordsGrid = document.getElementById("learnWords");
             wordsGrid.innerHTML = "";
             item.words.forEach(word => {
                 const card = document.createElement("div");
                 card.className = "word-card";
+                const imgEmoji = getWordImage(word, item.icon);
                 card.innerHTML = `
                     <div class="word-en">${word}</div>
-                    <div class="word-icon">🔊</div>
+                    <img class="word-img" src="${emojiToTwemojiUrl(imgEmoji)}" alt="${word}">
                 `;
                 card.addEventListener("click", () => speak(word));
                 wordsGrid.appendChild(card);
@@ -1302,10 +1553,7 @@
             };
 
             switchScreen("learn");
-            setTimeout(() => {
-                speak(`${item.symbol} says ${item.sound}. ${item.keyword}.`);
-                item.words.forEach((w, i) => setTimeout(() => speak(w), (i + 2) * 1200));
-            }, 500);
+            // 不再自动朗读，等孩子点击播放按钮
         }
 
         // ===================== 听音辨音 =====================
@@ -1530,6 +1778,7 @@
             window.speechSynthesis.onvoiceschanged = () => loadVoices();
         }
         renderLevels();
+        renderCheckin();
     </script>
 </body>
 </html>

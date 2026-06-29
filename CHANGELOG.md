@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-29
+
+### Added
+- 每日打卡系统：首页显示连续学习天数，完成练习后可打卡，数据保存在 localStorage
+- 跟读功能：学习模式增加 🎤 跟读按钮，支持浏览器语音识别，不支持时给出引导
+- 单词配图：Level 1 全部 104 个单词配上 Twemoji SVG 图片
+- 完成练习后增加"今日打卡"入口
+
+### Changed
+- 默认朗读语速从 0.7 降至 0.5
+- 默认关闭自动朗读，进入学习页后由孩子点击播放按钮
+- 语速调节范围调整为 0.3-0.9
+- 学习页 keyword 区域显示对应大图
+
+### Fixed
+- 移除残留的 `confirm()` 弹窗
+- 完成页打卡按钮逻辑优化
+
 ## [0.4.0] - 2026-06-29
 
 ### Added
