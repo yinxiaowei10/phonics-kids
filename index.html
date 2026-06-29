@@ -12,19 +12,24 @@
         }
 
         :root {
-            --primary: #7e57c2;
-            --primary-dark: #5e35b1;
-            --success: #66bb6a;
-            --warning: #ffca28;
-            --sky-top: #81d4fa;
-            --sky-bottom: #e1f5fe;
+            --primary: #FF6B6B;
+            --primary-dark: #EE5A5A;
+            --secondary: #4ECDC4;
+            --secondary-dark: #3DBBB3;
+            --success: #95E1D3;
+            --success-dark: #6BC4B2;
+            --warning: #FFD93D;
+            --bg-top: #FFE66D;
+            --bg-mid: #FF9F68;
+            --bg-bottom: #FF6B6B;
             --card: #ffffff;
             --text: #4a4a4a;
+            --mascot: #FF8C42;
         }
 
         body {
             font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-            background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+            background: linear-gradient(160deg, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg-bottom) 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -37,36 +42,120 @@
             width: 100%;
             max-width: 900px;
             background: var(--card);
-            border-radius: 32px;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+            border-radius: 40px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.15);
             padding: 36px;
-            border: 5px solid #fff;
+            border: 6px solid rgba(255,255,255,0.6);
+            position: relative;
+            overflow: hidden;
         }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(255,217,61,0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .mascot {
+            position: absolute;
+            top: 16px;
+            left: 20px;
+            width: 64px;
+            height: 64px;
+            z-index: 10;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: mascotFloat 3s ease-in-out infinite;
+        }
+        .mascot:hover { transform: scale(1.15) rotate(-5deg); }
+        .mascot svg { width: 100%; height: 100%; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15)); }
+
+        @keyframes mascotFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .mascot-bubble {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            background: #fff;
+            padding: 8px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            color: var(--text);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            white-space: nowrap;
+            transition: transform 0.3s;
+            pointer-events: none;
+        }
+        .mascot:hover .mascot-bubble { transform: translateX(-50%) scale(1); }
 
         .screen {
             display: none;
-            animation: fadeIn 0.4s ease;
+            animation: fadeIn 0.5s ease;
         }
 
         .screen.active { display: block; }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.3); }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes soundWave {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        .correct-anim { animation: pop 0.4s ease, pulse 0.6s ease 0.4s; }
+        .wrong-anim { animation: shake 0.4s ease; }
 
         h1 {
             text-align: center;
             color: var(--primary);
-            font-size: 40px;
+            font-size: 42px;
             margin-bottom: 8px;
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.8);
         }
 
         .subtitle {
             text-align: center;
-            color: #78909c;
+            color: #8d6e63;
             margin-bottom: 28px;
             font-size: 18px;
+            font-weight: 500;
         }
 
         .section-title {
@@ -84,28 +173,40 @@
         }
 
         .level-card {
-            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
-            border: 4px solid #ce93d8;
-            border-radius: 20px;
-            padding: 22px;
+            background: linear-gradient(135deg, #FFF5E6 0%, #FFE4C4 100%);
+            border: 4px solid #FFD93D;
+            border-radius: 28px;
+            padding: 24px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-align: center;
+            box-shadow: 0 6px 0 #F0C040;
+            animation: bounceIn 0.5s ease backwards;
         }
 
+        .level-card:nth-child(1) { animation-delay: 0.05s; }
+        .level-card:nth-child(2) { animation-delay: 0.1s; }
+        .level-card:nth-child(3) { animation-delay: 0.15s; }
+        .level-card:nth-child(4) { animation-delay: 0.2s; }
+        .level-card:nth-child(5) { animation-delay: 0.25s; }
+
         .level-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--primary);
-            box-shadow: 0 8px 20px rgba(126, 87, 194, 0.2);
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 10px 0 #F0C040;
+        }
+        .level-card:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 2px 0 #F0C040;
         }
 
         .level-card.locked {
             opacity: 0.5;
             cursor: not-allowed;
+            filter: grayscale(0.6);
         }
 
         .level-card .level-num {
-            font-size: 36px;
+            font-size: 38px;
             font-weight: bold;
             color: var(--primary);
         }
@@ -114,6 +215,7 @@
             font-size: 20px;
             font-weight: bold;
             margin: 8px 0;
+            color: #5d4037;
         }
 
         .level-card .level-desc {
@@ -129,20 +231,32 @@
         }
 
         .unit-card {
-            background: #e3f2fd;
-            border: 3px solid #90caf9;
-            border-radius: 16px;
-            padding: 16px;
+            background: linear-gradient(135deg, #E0F7FA 0%, #B2EBF2 100%);
+            border: 3px solid #4ECDC4;
+            border-radius: 22px;
+            padding: 18px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             font-size: 18px;
             font-weight: bold;
+            color: #00695c;
+            box-shadow: 0 4px 0 #3DBBB3;
+            animation: bounceIn 0.4s ease backwards;
         }
 
+        .unit-card:nth-child(1) { animation-delay: 0.05s; }
+        .unit-card:nth-child(2) { animation-delay: 0.1s; }
+        .unit-card:nth-child(3) { animation-delay: 0.15s; }
+        .unit-card:nth-child(4) { animation-delay: 0.2s; }
+
         .unit-card:hover {
-            background: #bbdefb;
-            transform: scale(1.03);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 0 #3DBBB3;
+        }
+        .unit-card:active {
+            transform: translateY(2px) scale(0.97);
+            box-shadow: 0 2px 0 #3DBBB3;
         }
 
         .mode-options {
@@ -153,50 +267,96 @@
         }
 
         .mode-card {
-            background: #fff8e1;
-            border: 4px solid #ffcc80;
-            border-radius: 18px;
-            padding: 20px;
+            background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+            border: 4px solid #FFB74D;
+            border-radius: 24px;
+            padding: 24px 16px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 0 #F0A040;
+            animation: bounceIn 0.5s ease backwards;
         }
 
+        .mode-card:nth-child(1) { animation-delay: 0.05s; }
+        .mode-card:nth-child(2) { animation-delay: 0.1s; }
+        .mode-card:nth-child(3) { animation-delay: 0.15s; }
+        .mode-card:nth-child(4) { animation-delay: 0.2s; }
+
         .mode-card:hover {
-            background: #ffecb3;
-            border-color: var(--warning);
+            transform: translateY(-5px) scale(1.03) rotate(-1deg);
+            box-shadow: 0 9px 0 #F0A040;
+        }
+        .mode-card:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 2px 0 #F0A040;
         }
 
         .mode-card .icon {
-            font-size: 40px;
-            margin-bottom: 8px;
+            font-size: 44px;
+            margin-bottom: 10px;
+            display: inline-block;
+            transition: transform 0.3s;
         }
+        .mode-card:hover .icon { transform: scale(1.2) rotate(5deg); }
 
         .mode-card .name {
             font-size: 20px;
             font-weight: bold;
+            color: #5d4037;
         }
 
         .phoneme-display {
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-            border-radius: 24px;
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            border-radius: 32px;
             padding: 40px;
             text-align: center;
             margin-bottom: 24px;
-            border: 4px dashed #a5d6a7;
+            border: 4px dashed #81C784;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phoneme-display::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 60%);
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .phoneme-big {
-            font-size: 90px;
+            font-size: 96px;
             font-weight: bold;
             color: var(--primary);
             margin: 10px 0;
+            text-shadow: 3px 3px 0px rgba(0,0,0,0.08);
+            position: relative;
+            z-index: 1;
         }
 
         .phoneme-keyword {
-            font-size: 28px;
+            font-size: 30px;
             color: #2e7d32;
             margin: 14px 0;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+
+        .speak-btn-wrap {
+            position: relative;
+            display: inline-block;
+            z-index: 1;
         }
 
         .speak-btn {
@@ -208,12 +368,27 @@
             color: #fff;
             font-size: 48px;
             cursor: pointer;
-            box-shadow: 0 8px 24px rgba(126, 87, 194, 0.3);
-            transition: all 0.2s;
+            box-shadow: 0 8px 0 #D64545, 0 12px 24px rgba(238,90,90,0.3);
+            transition: all 0.15s;
+            position: relative;
+            z-index: 2;
         }
 
         .speak-btn:hover { transform: scale(1.08); }
-        .speak-btn:active { transform: scale(0.95); }
+        .speak-btn:active {
+            transform: translateY(4px) scale(0.98);
+            box-shadow: 0 4px 0 #D64545, 0 6px 12px rgba(238,90,90,0.3);
+        }
+
+        .speak-btn.speaking::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.8);
+            animation: soundWave 1s ease-out infinite;
+            z-index: -1;
+        }
 
         .word-grid {
             display: grid;
@@ -224,17 +399,25 @@
 
         .word-card {
             background: #fff;
-            border: 3px solid #e0e0e0;
-            border-radius: 16px;
-            padding: 16px;
+            border: 3px solid #FFE0B2;
+            border-radius: 20px;
+            padding: 18px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 0 #FFCC80;
+            position: relative;
+            overflow: hidden;
         }
 
         .word-card:hover {
             border-color: var(--primary);
-            transform: translateY(-3px);
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 8px 0 #FFCC80;
+        }
+        .word-card:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 2px 0 #FFCC80;
         }
 
         .word-card .word-en {
@@ -246,21 +429,25 @@
         .word-card .word-icon {
             font-size: 40px;
             margin: 8px 0;
+            transition: transform 0.3s;
         }
+        .word-card:hover .word-icon { transform: scale(1.2); }
 
         .progress-bar {
-            height: 16px;
-            background: #e0e0e0;
-            border-radius: 8px;
+            height: 20px;
+            background: #FFF3E0;
+            border-radius: 10px;
             overflow: hidden;
             margin-bottom: 20px;
+            border: 2px solid #FFE0B2;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary) 0%, var(--success) 100%);
+            background: linear-gradient(90deg, var(--warning) 0%, var(--success) 50%, var(--secondary) 100%);
             width: 0%;
-            transition: width 0.3s;
+            transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-radius: 10px;
         }
 
         .btn {
@@ -269,18 +456,24 @@
             font-size: 20px;
             font-weight: bold;
             border: none;
-            border-radius: 16px;
+            border-radius: 18px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.15s;
             text-align: center;
             width: 100%;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.15);
         }
 
         .btn-primary { background: var(--primary); color: #fff; }
-        .btn-primary:hover { background: var(--primary-dark); }
-        .btn-secondary { background: #78909c; color: #fff; }
-        .btn-secondary:hover { background: #546e7a; }
-        .btn-success { background: var(--success); color: #fff; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-primary:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+
+        .btn-secondary { background: var(--secondary); color: #fff; }
+        .btn-secondary:hover { background: var(--secondary-dark); transform: translateY(-2px); }
+        .btn-secondary:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+
+        .btn-success { background: var(--success); color: #fff; box-shadow: 0 5px 0 var(--success-dark); }
+        .btn-success:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--success-dark); }
 
         .btn-row {
             display: grid;
@@ -461,6 +654,27 @@
 </head>
 <body>
     <div class="container">
+        <!-- Mascot -->
+        <div class="mascot" id="mascot" title="我是小狐狸 Foxy，陪你学拼读！">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="50" cy="85" rx="30" ry="12" fill="#FFB74D" opacity="0.3"/>
+                <path d="M30 35 L15 15 L45 30 Z" fill="#FF8C42"/>
+                <path d="M70 35 L85 15 L55 30 Z" fill="#FF8C42"/>
+                <circle cx="50" cy="55" r="28" fill="#FF8C42"/>
+                <ellipse cx="38" cy="48" rx="7" ry="9" fill="#fff"/>
+                <ellipse cx="62" cy="48" rx="7" ry="9" fill="#fff"/>
+                <circle cx="38" cy="50" r="4" fill="#333"/>
+                <circle cx="62" cy="50" r="4" fill="#333"/>
+                <ellipse cx="50" cy="58" rx="5" ry="3" fill="#333"/>
+                <path d="M45 65 Q50 70 55 65" stroke="#333" stroke-width="2" fill="none"/>
+                <circle cx="30" cy="62" r="4" fill="#FFAB91"/>
+                <circle cx="70" cy="62" r="4" fill="#FFAB91"/>
+                <path d="M25 55 Q20 60 25 65" stroke="#333" stroke-width="2" fill="none"/>
+                <path d="M75 55 Q80 60 75 65" stroke="#333" stroke-width="2" fill="none"/>
+            </svg>
+            <div class="mascot-bubble">加油！你可以的！</div>
+        </div>
+
         <!-- 首页：选择级别 -->
         <div id="homeScreen" class="screen active">
             <button class="settings-btn" onclick="openSettings()" title="设置">⚙️</button>
@@ -513,7 +727,9 @@
                 <div id="learnPhoneme">Aa</div>
                 <div class="phoneme-big" id="learnBig">/a/</div>
                 <div class="phoneme-keyword" id="learnKeyword">apple 🍎</div>
-                <button class="speak-btn" id="learnSpeak">🔊</button>
+                <div class="speak-btn-wrap">
+                    <button class="speak-btn" id="learnSpeak">🔊</button>
+                </div>
             </div>
             <div class="word-grid" id="learnWords"></div>
             <div class="btn-row">
@@ -529,7 +745,9 @@
             </div>
             <div class="phoneme-display">
                 <div>听发音，选择你听到的字母/组合</div>
-                <button class="speak-btn" id="listenPlay" style="margin-top: 20px;">🔊</button>
+                <div class="speak-btn-wrap">
+                    <button class="speak-btn" id="listenPlay" style="margin-top: 20px;">🔊</button>
+                </div>
             </div>
             <div class="word-grid" id="listenOptions"></div>
             <div class="feedback" id="listenFeedback"></div>
@@ -548,7 +766,9 @@
                 <div>跟着读一读</div>
                 <div class="phoneme-big" id="blendWord">cat</div>
                 <div class="phoneme-keyword" id="blendBreak">c-a-t</div>
-                <button class="speak-btn" id="blendSpeak">🔊</button>
+                <div class="speak-btn-wrap">
+                    <button class="speak-btn" id="blendSpeak">🔊</button>
+                </div>
             </div>
             <div class="btn-row">
                 <button class="btn btn-secondary" onclick="goToMode()">⬅️ 返回</button>
@@ -563,7 +783,9 @@
             </div>
             <div class="phoneme-display">
                 <div>听发音，写出单词</div>
-                <button class="speak-btn" id="writePlay" style="margin-top: 20px;">🔊</button>
+                <div class="speak-btn-wrap">
+                    <button class="speak-btn" id="writePlay" style="margin-top: 20px;">🔊</button>
+                </div>
             </div>
             <input type="text" id="writeInput" placeholder="在这里输入单词" style="width:100%; padding:18px; font-size:24px; border-radius:14px; border:3px solid #90caf9; text-align:center; margin: 16px 0;">
             <button class="btn btn-primary" id="writeSubmit">✅ 提交</button>
@@ -878,15 +1100,24 @@
             info.textContent = v ? `当前音色：${v.name}` : "未找到英文语音";
         }
 
+        function setSpeaking(isSpeaking) {
+            document.querySelectorAll(".speak-btn").forEach(btn => {
+                btn.classList.toggle("speaking", isSpeaking);
+            });
+        }
+
         function speak(text) {
             if (!window.speechSynthesis || !appState.settings.autoSpeak) return;
             window.speechSynthesis.cancel();
+            setSpeaking(true);
             const utter = new SpeechSynthesisUtterance(text);
             const voice = appState.settings.voiceName === "auto" ? preferredVoice || getPreferredVoice() : getPreferredVoice();
             if (voice) utter.voice = voice;
             utter.lang = "en-US";
             utter.rate = appState.settings.rate;
             utter.pitch = 1.0;
+            utter.onend = () => setSpeaking(false);
+            utter.onerror = () => setSpeaking(false);
             window.speechSynthesis.speak(utter);
         }
 
@@ -1111,6 +1342,21 @@
                 feedback.style.display = "block";
                 nextBtn.disabled = false;
                 Array.from(grid.children).forEach(c => c.style.pointerEvents = "none");
+                const selectedCard = grid.children[index];
+                selectedCard.classList.add(isCorrect ? "correct-anim" : "wrong-anim");
+                if (isCorrect) {
+                    selectedCard.style.borderColor = "var(--success)";
+                    selectedCard.style.background = "#E8F5E9";
+                } else {
+                    selectedCard.style.borderColor = "#EF5350";
+                    selectedCard.style.background = "#FFEBEE";
+                    // 高亮正确答案
+                    const correctIdx = options.findIndex(o => o.symbol === item.symbol);
+                    if (correctIdx >= 0) {
+                        grid.children[correctIdx].style.borderColor = "var(--success)";
+                        grid.children[correctIdx].style.background = "#E8F5E9";
+                    }
+                }
                 isCorrect ? correctSound() : wrongSound();
             }
 
@@ -1207,6 +1453,10 @@
                 feedback.style.display = "block";
                 nextBtn.disabled = false;
                 input.disabled = true;
+                input.classList.remove("correct-anim", "wrong-anim");
+                void input.offsetWidth; // 触发重绘
+                input.classList.add(isCorrect ? "correct-anim" : "wrong-anim");
+                input.style.borderColor = isCorrect ? "var(--success)" : "#EF5350";
                 isCorrect ? correctSound() : wrongSound();
             };
 

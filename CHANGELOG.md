@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-29
+
+### Added
+- 新增 mascot 角色 "Foxy"（小狐狸），全程陪伴学习
+- 全新儿童友好配色：暖黄、珊瑚红、青绿渐变
+- 卡片入场弹跳动画、hover 上浮、点击下沉效果
+- 朗读按钮声音波纹动画
+- 答题反馈动画：答对弹跳闪光，答错抖动提示
+- 听音辨音答错时高亮正确答案
+
+### Changed
+- 全面更新页面视觉风格，更明亮、更童趣
+- 进度条改为彩虹渐变并增加弹性动画
+- 按钮增加 3D 按下效果
+
 ## [0.3.0] - 2026-06-29
 
 ### Added
